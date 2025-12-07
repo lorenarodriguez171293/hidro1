@@ -126,12 +126,14 @@
 
   /* NUEVO: gráfico mensual alineado */
   .chart-grid{
-    display:grid;
-    grid-template-rows: 200px 22px;
-    grid-template-columns: repeat(12, 1fr);
-    gap:6px;
-    margin-top:10px;
-  }
+  display:grid;
+  grid-template-rows: 200px 22px;
+  grid-template-columns: repeat(12, auto); /* columnas ajustadas al contenido */
+  justify-content:space-between;           /* separa visualmente */
+  gap:4px;
+  margin-top:10px;
+}
+
 
   .chart{
     grid-column:1 / 13;
@@ -141,6 +143,13 @@
     gap:6px;
     height:200px;
   }
+.chart > div {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:32px;    /* ancho fijo para contener barra + texto */
+  margin:0 auto; /* centrado */
+}
 
   .labels{
     grid-column:1 / 13;
