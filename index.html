@@ -172,6 +172,14 @@
     .reservoir{ height:180px; }
   }
 </style>
+  .bar-value {
+    text-align:center;
+    font-size:11px;
+    color:#033049; /* azul oscuro */
+    margin-top:4px;
+    font-weight:600;
+}
+
 </head>
 
 <body>
@@ -331,9 +339,16 @@ function drawChart(baseMonthly, factors){
   for(let i=0;i<12;i++){
     const val = values[i];
     const heightPct = (val / maxVal);
+
+    // Contenedor de barra + valor debajo
+    const wrapper = document.createElement('div');
+    wrapper.style.display = "flex";
+    wrapper.style.flexDirection = "column";
+    wrapper.style.alignItems = "center";
+
+    // Barra
     const bar = document.createElement('div');
     bar.className = 'bar';
-
     const h = Math.max(6, Math.round(heightPct * 180));
     bar.style.height = h + 'px';
     bar.title = Math.round(val).toLocaleString() + ' kWh';
@@ -346,7 +361,17 @@ function drawChart(baseMonthly, factors){
     span.innerText = Math.round(val/1000) + ' M';
 
     bar.appendChild(span);
-    chart.appendChild(bar);
+
+    // Valor debajo (kWh)
+    const valueLabel = document.createElement('div');
+    valueLabel.className = "bar-value";
+    valueLabel.textContent = Math.round(val).toLocaleString() + " kWh";
+
+    // Agregar barra + texto al wrapper
+    wrapper.appendChild(bar);
+    wrapper.appendChild(valueLabel);
+
+    chart.appendChild(wrapper);
   }
 }
 
