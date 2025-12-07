@@ -152,7 +152,8 @@
   }
 
   .bar {
-    width:100%;
+    width: 16px; /* barra fija, no se estira horizontalmente */
+    margin: 0 auto; /* centra la barra dentro de cada columna */
     background:linear-gradient(180deg,#00a6ff,#0077b6);
     border-radius:6px 6px 2px 2px;
     display:flex;
@@ -161,7 +162,8 @@
     color:white;
     font-size:11px;
     box-shadow:0 6px 12px rgba(0,0,0,0.06);
-  }
+    transition: height 0.25s ease-out; /* animación suave opcional */
+}
 
   footer { text-align:center; color:var(--muted); margin-top:18px; font-size:13px; }
 
