@@ -125,24 +125,23 @@
   .metric p { font-weight:700; font-size:18px; margin:8px 0 0 0; }
 
   /* NUEVO: gráfico mensual alineado */
-  .chart-grid{
+ .chart-grid{
   display:grid;
-  grid-template-rows: 200px 22px;
-  grid-template-columns: repeat(12, auto); /* columnas ajustadas al contenido */
-  justify-content:space-between;           /* separa visualmente */
+  grid-template-rows: 200px 40px 22px; /* barras | valores | meses */
+  grid-template-columns: repeat(12, 1fr);
   gap:4px;
   margin-top:10px;
 }
 
 
+
   .chart{
-    grid-column:1 / 13;
-    display:grid;
-    grid-template-columns: repeat(12, 1fr);
-    align-items:end;
-    gap:6px;
-    height:200px;
-  }
+  grid-column: 1 / 13;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  height:200px;
+}
 .chart > div {
   display:flex;
   flex-direction:column;
@@ -151,16 +150,14 @@
   margin:0 auto; /* centrado */
 }
 
-  .labels{
-    grid-column:1 / 13;
-    display:grid;
-    grid-template-columns: repeat(12, 1fr);
-    text-align:center;
-    font-size:11px;
-    color:var(--muted);
-    margin-top:6px; /* 👈 separa los meses del valor */
+ .labels{
+  grid-column:1 / 13;
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:var(--muted);
+  margin-top:10px;
 }
-
 
   .bar {
     width: 16px; /* barra fija, no se estira horizontalmente */
@@ -175,14 +172,15 @@
     box-shadow:0 6px 12px rgba(0,0,0,0.06);
     transition: height 0.25s ease-out; /* animación suave opcional */
 }
-  .bar-value {
-    text-align:center;
-    font-size:11px;
-    color:#033049;
-    margin-top:4px;
-    margin-bottom:10px; /* 👈 agrega espacio para que no choque con el mes */
-    font-weight:600;
-  }
+ .bar-value{
+  grid-column: 1 / 13;
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:#033049;
+  margin-top:6px;
+  font-weight:600;
+}
 
   footer { text-align:center; color:var(--muted); margin-top:18px; font-size:13px; }
 
@@ -347,22 +345,19 @@ function drawChart(baseMonthly, factors){
   let values = factors.map(f => baseMonthly * f);
   const maxVal = Math.max(...values, 1);
 
+  // contenedor de valores debajo (kWh)
+  const barValuesRow = document.querySelector('.bar-value');
+  barValuesRow.innerHTML = "";
+
   for(let i=0;i<12;i++){
     const val = values[i];
     const heightPct = (val / maxVal);
 
-    // Contenedor de barra + valor debajo
-    const wrapper = document.createElement('div');
-    wrapper.style.display = "flex";
-    wrapper.style.flexDirection = "column";
-    wrapper.style.alignItems = "center";
-
-    // Barra
+    // Barra individual
     const bar = document.createElement('div');
     bar.className = 'bar';
     const h = Math.max(6, Math.round(heightPct * 180));
     bar.style.height = h + 'px';
-    bar.title = Math.round(val).toLocaleString() + ' kWh';
 
     const span = document.createElement('div');
     span.style.padding = '4px';
@@ -372,18 +367,15 @@ function drawChart(baseMonthly, factors){
     span.innerText = Math.round(val/1000) + ' M';
 
     bar.appendChild(span);
+    chart.appendChild(bar);
 
     // Valor debajo (kWh)
-    const valueLabel = document.createElement('div');
-    valueLabel.className = "bar-value";
-    valueLabel.textContent = Math.round(val).toLocaleString() + " kWh";
-
-    // Agregar barra + texto al wrapper
-    wrapper.appendChild(bar);
-    wrapper.appendChild(valueLabel);
-
-    chart.appendChild(wrapper);
+    const num = document.createElement('div');
+    num.textContent = Math.round(val).toLocaleString() + " kWh";
+    barValuesRow.appendChild(num);
   }
+}
+
 }
 
 function numberWithCommas(x){ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
