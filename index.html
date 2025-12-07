@@ -52,13 +52,16 @@
   label { font-weight:600; color:var(--muted); display:block; margin-top:10px; }
   input[type="range"] { width:100%; }
   input[type="number"], select {
-    width:100%; padding:8px; border-radius:8px; border:1px solid #d7e7f5;
-    margin-top:6px; box-sizing:border-box;
+    width:100%;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid #d7e7f5;
+    margin-top:6px;
+    box-sizing:border-box;
   }
-  .row { display:flex; gap:12px; align-items:center; }
   .small { font-size:13px; color:var(--muted); margin-top:6px; }
 
-  /* ANIMACIÓN EMBALSE */
+  /* Embalse */
   .reservoir {
     width:100%;
     height:220px;
@@ -68,6 +71,7 @@
     background: linear-gradient(#bfe9ff, #88d7ff);
     border:3px solid rgba(0,120,160,0.07);
   }
+
   .shore {
     position:absolute;
     bottom:0;
@@ -77,17 +81,15 @@
     background: linear-gradient(#8ec6d8, #6fb0c9);
     border-top-left-radius:30px;
     border-top-right-radius:30px;
-    box-shadow: inset 0 10px 20px rgba(0,0,0,0.05);
   }
 
-  /* waves */
   .wave {
     position:absolute;
     left:0; right:0;
     height:120px;
-    background: url('data:image/svg+xml;utf8,\
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 28" preserveAspectRatio="none">\
-      <path fill="%23ffffff" d="M0 12 Q 10 0 24 12 T 48 12 T 72 12 T 96 12 T 120 12 V28 H0z"/>\
+    background:url('data:image/svg+xml;utf8,\
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 28">\
+    <path fill="%23ffffff" d="M0 12 Q 10 0 24 12 T 48 12 T 72 12 T 96 12 T 120 12 V28 H0z"/>\
     </svg>') repeat-x;
     opacity:0.25;
     bottom:40px;
@@ -105,15 +107,20 @@
     left:0; right:0;
     bottom:40px;
     height:0;
-    background: rgba(8,140,182,0.08);
+    background: rgba(8,140,182,0.10);
     pointer-events:none;
   }
 
   @keyframes waveA { from { background-position-x:0 } to { background-position-x:600px } }
   @keyframes waveB { from { background-position-x:0 } to { background-position-x:-900px } }
 
-  /* resultados */
-  .metrics { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  /* Métricas */
+  .metrics { 
+    display:grid; 
+    grid-template-columns:1fr 1fr; 
+    gap:12px; 
+    margin-top:12px; 
+  }
   .metric {
     background:linear-gradient(180deg,#fff,#f6fbff);
     border-radius:8px;
@@ -121,76 +128,63 @@
     text-align:center;
     border:1px solid #e6f4ff;
   }
-  .metric h3 { margin:0; color:#234; font-size:14px; }
-  .metric p { font-weight:700; font-size:18px; margin:8px 0 0 0; }
 
-  /* NUEVO: gráfico mensual alineado */
- .chart-grid{
-  display:grid;
-  grid-template-rows: 200px 40px 22px; /* barras | valores | meses */
-  grid-template-columns: repeat(12, 1fr);
-  gap:4px;
-  margin-top:10px;
-}
-
-
+  /* Gráfico mensual */
+  .chart-grid{
+    display:grid;
+    grid-template-rows: 200px 40px 22px; /* barras | valores | meses */
+    grid-template-columns: repeat(12, 1fr);
+    gap:4px;
+    margin-top:10px;
+  }
 
   .chart{
-  grid-column: 1 / 13;
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  height:200px;
-}
-.chart > div {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  width:32px;    /* ancho fijo para contener barra + texto */
-  margin:0 auto; /* centrado */
-}
+    grid-column: 1 / 13;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    height:200px;
+  }
 
- .labels{
-  grid-column:1 / 13;
-  display:flex;
-  justify-content:space-between;
-  font-size:11px;
-  color:var(--muted);
-  margin-top:10px;
-}
+  .chart > div{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:32px;
+  }
 
   .bar {
-    width: 16px; /* barra fija, no se estira horizontalmente */
-    margin: 0 auto; /* centra la barra dentro de cada columna */
+    width: 16px;
     background:linear-gradient(180deg,#00a6ff,#0077b6);
     border-radius:6px 6px 2px 2px;
     display:flex;
     align-items:flex-end;
     justify-content:center;
-    color:#033049;
-    font-size:11px;
-    box-shadow:0 6px 12px rgba(0,0,0,0.06);
-    transition: height 0.25s ease-out; /* animación suave opcional */
-}
- .bar-value{
-  grid-column: 1 / 13;
-  display:flex;
-  justify-content:space-between;
-  font-size:11px;
-  color:#033049;
-  margin-top:6px;
-  font-weight:600;
-}
-
-  footer { text-align:center; color:var(--muted); margin-top:18px; font-size:13px; }
-
-  @media (max-width:980px){
-    .grid{ grid-template-columns: 1fr; }
-    .reservoir{ height:180px; }
+    color:#fff;
+    font-size:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
   }
+
+  .bar-value{
+    grid-column:1 / 13;
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    margin-top:4px;
+    font-weight:600;
+    color:#033049;
+  }
+
+  .labels{
+    grid-column:1 / 13;
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color:var(--muted);
+  }
+
 </style>
 </head>
-
 <body>
 
 <header>
@@ -201,7 +195,7 @@
 <div class="container">
   <div class="grid">
 
-    <!-- PANEL IZQUIERDO -->
+    <!-- Panel izquierdo -->
     <div class="card">
 
       <h2>Embalse y animación</h2>
@@ -212,15 +206,15 @@
         <div class="shore"></div>
       </div>
 
-      <label for="altura">Altura efectiva (H) del agua (m)</label>
-      <input type="range" id="altura" min="5" max="200" step="1" value="50" oninput="actualizar()">
+      <label>Altura efectiva (H) del agua (m)</label>
+      <input type="range" id="altura" min="5" max="200" value="50" oninput="actualizar()">
       <div class="small">Altura actual: <span id="alturaVal">50</span> m</div>
 
-      <label for="caudal">Caudal por turbina (Q) (m³/s)</label>
-      <input type="range" id="caudal" min="1" max="200" step="1" value="20" oninput="actualizar()">
+      <label>Caudal por turbina (Q) (m³/s)</label>
+      <input type="range" id="caudal" min="1" max="200" value="20" oninput="actualizar()">
       <div class="small">Caudal por turbina: <span id="caudalVal">20</span> m³/s</div>
 
-      <label for="turbinas">Cantidad de turbinas</label>
+      <label>Cantidad de turbinas</label>
       <select id="turbinas" onchange="actualizar()">
         <option value="1">1</option>
         <option value="2">2</option>
@@ -228,12 +222,11 @@
         <option value="6">6</option>
       </select>
 
-      <label for="eficiencia">Eficiencia del sistema (%)</label>
+      <label>Eficiencia del sistema (%)</label>
       <input type="number" id="eficiencia" min="50" max="95" value="90" oninput="actualizar()">
-      <div class="small">Eficiencia típica: 85–92% (turbina + generador)</div>
     </div>
 
-    <!-- PANEL DERECHO -->
+    <!-- Panel derecho -->
     <div class="card">
       <h2>Resultados</h2>
 
@@ -247,13 +240,14 @@
       </div>
 
       <h3 style="margin-top:14px;">Producción estimada por mes</h3>
-      <p style="font-size:13px; color:#6b7c93; margin-bottom:4px;">
+      <p style="font-size:13px; color:#6b7c93;">
         Este gráfico muestra cómo varía la producción mensual en función de la energía generada y los factores estacionales.
       </p>
 
-      <div id="chartWrap" class="card" style="padding:12px;">
+      <div class="card" style="padding:12px;">
         <div class="chart-grid">
           <div id="chart" class="chart"></div>
+          <div class="bar-value"></div>
           <div class="labels">
             <span>E</span><span>F</span><span>M</span><span>A</span>
             <span>M</span><span>J</span><span>J</span><span>A</span>
@@ -264,22 +258,14 @@
 
     </div>
   </div>
-
-  <footer>
-    Supuestos: ρ=1000 kg/m³; g=9.81 m/s²; factor emisiones = 0.45 kg CO₂/kWh.
-  </footer>
 </div>
 
 <script>
-/* ------------------------------------------------
-   Simulador hidroeléctrico
---------------------------------------------------- */
 
 const rho = 1000;
 const g = 9.81;
 const emis_factor_kg_per_kwh = 0.45;
 
-// Elementos
 const alturaEl = document.getElementById('altura');
 const alturaVal = document.getElementById('alturaVal');
 const caudalEl = document.getElementById('caudal');
@@ -304,10 +290,10 @@ function actualizar(){
   const H = Number(alturaEl.value);
   const Q_per = Number(caudalEl.value);
   const n = Number(turbinasEl.value);
-  const eta = Math.max(0, Math.min(0.99, Number(eficienciaEl.value)/100));
+  const eta = Math.min(Math.max(Number(eficienciaEl.value)/100, 0), 0.99);
 
-  alturaVal.textContent = H.toFixed(0);
-  caudalVal.textContent = Q_per.toFixed(0);
+  alturaVal.textContent = H;
+  caudalVal.textContent = Q_per;
 
   const Q_total = Q_per * n;
   const P_W = rho * g * Q_total * H * eta;
@@ -318,67 +304,58 @@ function actualizar(){
   const prod_anual_kwh = prod_diaria_kwh * 365;
 
   const co2_kg_anual = prod_anual_kwh * emis_factor_kg_per_kwh;
-  const co2_t_anual = co2_kg_anual / 1000;
 
-  potenciaEl.textContent = numberWithCommas(P_kW.toFixed(1)) + ' kW';
-  diariaEl.textContent = numberWithCommas(prod_diaria_kwh.toFixed(0)) + ' kWh';
-  mensualEl.textContent = numberWithCommas(prod_mensual_kwh.toFixed(0)) + ' kWh';
-  anualEl.textContent = numberWithCommas(prod_anual_kwh.toFixed(0)) + ' kWh';
-  co2El.textContent = numberWithCommas(co2_t_anual.toFixed(1)) + ' tCO₂/año';
-  qtotalEl.textContent = numberWithCommas(Q_total.toFixed(1)) + ' m³/s';
+  potenciaEl.textContent = number(P_kW) + " kW";
+  diariaEl.textContent = number(prod_diaria_kwh) + " kWh";
+  mensualEl.textContent = number(prod_mensual_kwh) + " kWh";
+  anualEl.textContent = number(prod_anual_kwh) + " kWh";
+  co2El.textContent = number(co2_kg_anual/1000) + " tCO₂/año";
+  qtotalEl.textContent = number(Q_total) + " m³/s";
 
-  const pct = (H - 5) / (200 - 5);
-  const maxHeightPx = 120;
-  waterLevel.style.height = (10 + pct * maxHeightPx) + 'px';
+  const pct = (H - 5) / 195;
+  waterLevel.style.height = (10 + pct * 120) + "px";
 
-  const speedA = 6 - Math.min(4.5, Math.log10(1 + Q_total));
-  wave1.style.animationDuration = Math.max(2.5, speedA) + 's';
-  wave2.style.animationDuration = Math.max(5, speedA * 1.6) + 's';
+  wave1.style.animationDuration = Math.max(2.5, 6 - Math.log10(1+Q_total)) + "s";
+  wave2.style.animationDuration = Math.max(5, 9 - Math.log10(1+Q_total)) + "s";
 
-  const seasonFactors = [0.9,0.95,1.05,1.1,1.05,0.95,0.9,0.9,1.0,1.05,1.1,1.05];
-  drawChart(prod_mensual_kwh, seasonFactors);
+  drawChart(prod_mensual_kwh);
 }
 
-function drawChart(baseMonthly, factors){
-  chart.innerHTML = '';
+function drawChart(baseMonthly){
 
-  let values = factors.map(f => baseMonthly * f);
-  const maxVal = Math.max(...values, 1);
+  chart.innerHTML = "";
+  document.querySelector(".bar-value").innerHTML = "";
 
-  // contenedor de valores debajo (kWh)
-  const barValuesRow = document.querySelector('.bar-value');
-  barValuesRow.innerHTML = "";
+  const factors = [0.9,0.95,1.05,1.1,1.05,0.95,0.9,0.9,1.0,1.05,1.1,1.05];
+  const values = factors.map(f => baseMonthly * f);
+  const maxVal = Math.max(...values);
 
-  for(let i=0;i<12;i++){
-    const val = values[i];
-    const heightPct = (val / maxVal);
+  values.forEach(val => {
 
-    // Barra individual
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    const h = Math.max(6, Math.round(heightPct * 180));
-    bar.style.height = h + 'px';
+    const wrapper = document.createElement("div");
 
-    const span = document.createElement('div');
-    span.style.padding = '4px';
-    span.style.fontSize = '7px';
-    span.style.color = 'rgba(255,255,255,0.95)';
-    span.style.textShadow = '0 1px 2px rgba(0,0,0,0.3)';
-    span.innerText = Math.round(val/1000) + ' M';
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.style.height = (val/maxVal * 180) + "px";
+
+    const span = document.createElement("div");
+    span.style.fontSize = "7px";
+    span.style.marginBottom = "3px";
+    span.textContent = Math.round(val/1000) + " M";
 
     bar.appendChild(span);
-    chart.appendChild(bar);
+    wrapper.appendChild(bar);
+    chart.appendChild(wrapper);
 
-    // Valor debajo (kWh)
-    const num = document.createElement('div');
-    num.textContent = Math.round(val).toLocaleString() + " kWh";
-    barValuesRow.appendChild(num);
-  }
+    const valText = document.createElement("div");
+    valText.textContent = number(val) + " kWh";
+    document.querySelector(".bar-value").appendChild(valText);
+  });
 }
 
+function number(x){
+  return x.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
-
-function numberWithCommas(x){ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 
 alturaEl.addEventListener('input', actualizar);
 caudalEl.addEventListener('input', actualizar);
@@ -386,7 +363,9 @@ turbinasEl.addEventListener('change', actualizar);
 eficienciaEl.addEventListener('input', actualizar);
 
 actualizar();
+
 </script>
 
 </body>
 </html>
+
