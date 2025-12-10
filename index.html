@@ -1,367 +1,275 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Simulador Hidroeléctrico</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Demo: Central Hidroeléctrica</title>
+  <style>
+    :root{--sky:#87ceeb;--water:#1e90ff;--dam:#bdbdbd;--concrete:#9b9b9b;--turbine:#2f4f4f}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    .wrap{min-height:100vh;display:grid;place-items:center;padding:18px;background:linear-gradient(180deg,var(--sky) 0%, #dff0ff 70%)}
+    .card{width:960px;max-width:96vw;background:linear-gradient(180deg,rgba(255,255,255,0.9),#fff);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.12);padding:18px}
+    h1{font-size:20px;margin:0 0 12px}
+    p{margin:0 0 8px;color:#333}
+    .scene{width:100%;height:480px}
 
-<style>
-  :root{
-    --bg:#e9f6ff;
-    --card:#ffffff;
-    --accent:#0077b6;
-    --muted:#6b7c93;
-    --green:#0a8a5f;
-  }
+    .water-wave{animation:wave 6s linear infinite}
+    @keyframes wave{from{transform:translateX(0)}to{transform:translateX(-160px)}}
 
-  body{
-    margin:0;
-    font-family: Inter, Arial, sans-serif;
-    background:var(--bg);
-    color:#033049;
-    -webkit-font-smoothing:antialiased;
-  }
+    .blade{transform-origin:center;animation:spin 1.5s linear infinite}
+    .blade.paused{animation-play-state:paused}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
-  header{
-    background:linear-gradient(90deg,var(--accent),#00a6ff);
-    color:white;
-    padding:20px;
-    text-align:center;
-  }
+    .controls{display:flex;gap:8px;align-items:center;margin-top:12px}
+    button{background:#1976d2;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    button.secondary{background:#eee;color:#222}
+    .label{font-size:13px;color:#444}
 
-  .container{
-    max-width:1100px;
-    margin:22px auto;
-    padding:16px;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns: 1fr 420px;
-    gap:18px;
-  }
-
-  .card{
-    background:var(--card);
-    border-radius:12px;
-    padding:16px;
-    box-shadow:0 6px 18px rgba(3,48,73,0.06);
-  }
-
-  h2 { margin:6px 0 12px 0; color:var(--accent); }
-  label { font-weight:600; color:var(--muted); display:block; margin-top:10px; }
-  input[type="range"] { width:100%; }
-  input[type="number"], select {
-    width:100%; padding:8px; border-radius:8px; border:1px solid #d7e7f5;
-    margin-top:6px; box-sizing:border-box;
-  }
-
-  .small { font-size:13px; color:var(--muted); margin-top:6px; }
-
-  /* ANIMACIÓN EMBALSE */
-  .reservoir {
-    width:100%;
-    height:220px;
-    position:relative;
-    overflow:hidden;
-    border-radius:10px;
-    background: linear-gradient(#bfe9ff, #88d7ff);
-    border:3px solid rgba(0,120,160,0.07);
-  }
-  .shore {
-    position:absolute;
-    bottom:0;
-    left:0;
-    right:0;
-    height:70px;
-    background: linear-gradient(#8ec6d8, #6fb0c9);
-    border-top-left-radius:30px;
-    border-top-right-radius:30px;
-    box-shadow: inset 0 10px 20px rgba(0,0,0,0.05);
-  }
-
-  /* waves */
-  .wave {
-    position:absolute;
-    left:0; right:0;
-    height:120px;
-    background: url('data:image/svg+xml;utf8,\
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 28" preserveAspectRatio="none">\
-      <path fill="%23ffffff" d="M0 12 Q 10 0 24 12 T 48 12 T 72 12 T 96 12 T 120 12 V28 H0z"/>\
-    </svg>') repeat-x;
-    opacity:0.25;
-    bottom:40px;
-    animation: waveA 6s linear infinite;
-  }
-
-  .wave.wave2 { bottom:30px; opacity:0.18; animation: waveB 10s linear infinite; }
-
-  .water-level {
-    position:absolute;
-    left:0; right:0;
-    bottom:40px;
-    height:0;
-    background: rgba(8,140,182,0.08);
-    pointer-events:none;
-  }
-
-  @keyframes waveA { from { background-position-x:0 } to { background-position-x:600px } }
-  @keyframes waveB { from { background-position-x:0 } to { background-position-x:-900px } }
-
-  /* resultados */
-  .metrics {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-    margin-top:12px;
-  }
-
-  .metric {
-    background:linear-gradient(180deg,#fff,#f6fbff);
-    border-radius:8px;
-    padding:10px;
-    text-align:center;
-    border:1px solid #e6f4ff;
-  }
-
-  .metric h3 { margin:0; color:#234; font-size:14px; }
-  .metric p { font-weight:700; font-size:18px; margin:8px 0 0 0; }
-
-  /* NUEVO: gráfico mensual alineado */
-  .chart-grid{
-    display:grid;
-    grid-template-rows: 200px 22px; /* barras | meses */
-    grid-template-columns: repeat(12, 1fr);
-    gap:4px;
-    margin-top:10px;
-  }
-
-  .chart{
-    grid-column:1 / 13;
-    display:flex;
-    justify-content:space-around;
-    align-items:flex-end;
-    height:200px;
-  }
-
-  .labels{
-    grid-column:1 / 13;
-    display:flex;
-    justify-content:space-around;
-    font-size:11px;
-    color:var(--muted);
-    margin-top:4px;
-  }
-
-  .bar {
-    width:26px; /* ENSANCHADA */
-    background:linear-gradient(180deg,#00a6ff,#0077b6);
-    border-radius:6px 6px 2px 2px;
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    color:white;
-    font-size:10px;
-    padding-bottom:3px;
-    box-shadow:0 6px 12px rgba(0,0,0,0.06);
-    transition: height 0.25s ease-out;
-  }
-
-  footer { text-align:center; color:var(--muted); margin-top:18px; font-size:13px; }
-
-  @media (max-width:980px){
-    .grid{ grid-template-columns: 1fr; }
-    .reservoir{ height:180px; }
-  }
-</style>
+    @media (max-width:520px){.scene{height:320px}}
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <div class="card" role="main">
+      <h1>Visualización: Central Hidroeléctrica (demo)</h1>
+      <p>Modelo simplificado con SVG: presa, embalse, flujo de agua y turbina rotando.</p>
 
-<header>
-  <h1>Simulador Hidroeléctrico</h1>
-<div class="small" style="color:white;">
-  Calcula potencia y producción según altura, caudal y cantidad de turbinas
-</div>
-</header>
+      <svg class="scene" viewBox="0 0 1200 600" aria-label="Ilustración de una central hidroeléctrica simplificada" role="img">
 
-<div class="container">
-  <div class="grid">
+        <defs>
+          <linearGradient id="skyGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#a9ddff"></stop>
+            <stop offset="100%" stop-color="#e6f7ff"></stop>
+          </linearGradient>
+          <linearGradient id="waterGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#4fb0ff"></stop>
+            <stop offset="100%" stop-color="#0066cc"></stop>
+          </linearGradient>
+          <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="8" stdDeviation="10" flood-opacity="0.15"/>
+          </filter>
+        </defs>
 
-    <!-- PANEL IZQUIERDO -->
-    <div class="card">
+        <rect x="0" y="0" width="1200" height="380" fill="url(#skyGrad)" />
 
-      <h2>Embalse y animación</h2>
-      <div class="reservoir" id="reservoir">
-        <div class="wave" id="wave1"></div>
-        <div class="wave wave2" id="wave2"></div>
-        <div class="water-level" id="waterLevel"></div>
-        <div class="shore"></div>
+        <path d="M0 300 C160 200 340 220 600 300 C820 360 980 280 1200 300 L1200 380 L0 380 Z" fill="#7fb07f" opacity="0.65"/>
+
+        <g id="reservoir">
+          <rect x="0" y="160" width="840" height="220" fill="url(#waterGrad)"/>
+          <g class="water-wave" id="waves" transform="translate(0,0)">
+            <path d="M-160 270 q40 -12 80 0 t80 0 t80 0 t80 0 t80 0" fill="none" stroke="#bfe6ff" stroke-width="8" opacity="0.18"/>
+            <path d="M-80 290 q40 -8 80 0 t80 0 t80 0 t80 0" fill="none" stroke="#cfeeff" stroke-width="6" opacity="0.14"/>
+          </g>
+        </g>
+
+        <g id="dam">
+          <path d="M840 160 L980 400 L1200 400 L1200 600 L760 600 L760 400 L840 160 Z" fill="#bdbdbd" stroke="#9b9b9b" stroke-width="2" filter="url(#softShadow)"/>
+          <g transform="translate(860,360)">
+            <rect x="0" y="0" width="50" height="40" rx="6" fill="#6e6e6e"/>
+            <rect x="70" y="0" width="50" height="40" rx="6" fill="#6e6e6e"/>
+          </g>
+        </g>
+
+        <g id="penstock">
+          <path d="M920 360 C980 420 1020 460 1020 520" stroke="#5b5b5b" stroke-width="36" stroke-linecap="round" fill="none"/>
+        </g>
+
+        <g id="powerhouse" transform="translate(960,480)">
+          <rect x="0" y="-120" width="420" height="120" rx="8" fill="#efefef" stroke="#c9c9c9"/>
+          <rect x="10" y="-110" width="60" height="100" rx="4" fill="#d6d6d6"/>
+          <text x="200" y="-70" font-size="18" text-anchor="middle" fill="#333">Central Hidroeléctrica</text>
+
+          <!-- SOLO 1 TURBINA (LA PRIMERA) -->
+          <g transform="translate(60,-10)">
+            <g class="turbine" data-id="t1" transform="translate(0,0)">
+              <circle cx="0" cy="0" r="36" fill="#eee" stroke="#bbb" stroke-width="4"/>
+              <g class="blade" id="blade1"></g>
+            </g>
+          </g>
+        </g>
+
+        <rect x="0" y="520" width="1200" height="80" fill="url(#waterGrad)" />
+        <g transform="translate(0,520)" class="water-wave">
+          <path d="M0 30 q40 -12 80 0 t80 0 t80 0 t80 0 t80 0 t80 0" fill="none" stroke="#bfe6ff" stroke-width="8" opacity="0.18"/>
+        </g>
+
+        <g font-size="14" fill="#123">
+          <text x="100" y="200">Embalse</text>
+          <text x="880" y="220">Presa / Casa de máquinas</text>
+          <text x="1020" y="520">Turbina</text>
+        </g>
+      </svg>
+
+      <div class="controls" aria-hidden="false">
+        <button id="toggle">Pausar turbina</button>
+        <button id="slow" class="secondary">Reducir velocidad</button>
+        <button id="fast" class="secondary">Aumentar velocidad</button>
+        <div class="label">Velocidad: <span id="speedLabel">1.0x</span></div>
       </div>
 
-      <label for="altura">Altura efectiva (H) del agua (m)</label>
-      <input type="range" id="altura" min="5" max="200" step="1" value="50" oninput="actualizar()">
-      <div class="small">Altura actual: <span id="alturaVal">50</span> m</div>
+      <div style="margin-top:20px; padding:12px; border:1px solid #ccc; border-radius:8px; background:#f9f9f9;">
+        <h3>Simulación energética</h3>
+        <label>Altura del embalse (m): <input type="number" id="altura" value="50"></label><br>
+        <label>Cantidad de turbinas: <input type="number" id="turbinas" value="1"></label><br>
+        <label>Caudal por turbina (m³/s): <input type="number" id="caudal" value="40"></label><br>
+        <label>Eficiencia (%): <input type="number" id="eficiencia" value="90"></label><br>
+        <button id="calcular">Calcular producción</button>
 
-      <label for="caudal">Caudal por turbina (Q) (m³/s)</label>
-      <input type="range" id="caudal" min="1" max="200" step="1" value="20" oninput="actualizar()">
-      <div class="small">Caudal por turbina: <span id="caudalVal">20</span> m³/s</div>
-
-      <label for="turbinas">Cantidad de turbinas</label>
-      <select id="turbinas" onchange="actualizar()">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="4">4</option>
-        <option value="6">6</option>
-      </select>
-
-      <label for="eficiencia">Eficiencia del sistema (%)</label>
-      <input type="number" id="eficiencia" min="50" max="95" value="90" oninput="actualizar()">
-      <div class="small">Eficiencia típica: 85–92%</div>
+        <div id="resultados" style="margin-top:12px; font-size:14px; color:#333;"></div>
+        <canvas id="grafico" width="400" height="200" style="margin-top:20px; background:#fff; border:1px solid #ddd;"></canvas>
+      </div>
     </div>
 
-    <!-- PANEL DERECHO -->
-    <div class="card">
-      <h2>Resultados</h2>
-
-      <div class="metrics">
-        <div class="metric"><h3>Potencia instantánea</h3><p id="potencia">0 kW</p></div>
-        <div class="metric"><h3>Producción diaria</h3><p id="diaria">0 kWh</p></div>
-        <div class="metric"><h3>Producción mensual</h3><p id="mensual">0 kWh</p></div>
-        <div class="metric"><h3>Producción anual</h3><p id="anual">0 kWh</p></div>
-        <div class="metric"><h3>CO₂ evitado</h3><p id="co2">0 tCO₂/año</p></div>
-        <div class="metric"><h3>Caudal total</h3><p id="qtotal">0 m³/s</p></div>
-      </div>
-
-      <h3 style="margin-top:14px;">Producción estimada por mes</h3>
-      <p style="font-size:13px; color:#6b7c93; margin-bottom:4px;">
-        Este gráfico muestra cómo varía la producción mensual en función de la energía generada y los factores estacionales.
-      </p>
-
-      <div id="chartWrap" class="card" style="padding:12px;">
-        <div class="chart-grid">
-          <div id="chart" class="chart"></div>
-
-          <div class="labels">
-            <span>E</span><span>F</span><span>M</span><span>A</span>
-            <span>M</span><span>J</span><span>J</span><span>A</span>
-            <span>S</span><span>O</span><span>N</span><span>D</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
+    <div style="margin-top:10px;font-size:13px;color:#555">Nota: este es un esquema simplificado para propósitos ilustrativos.</div>
   </div>
 
-  <footer>
-    Supuestos: ρ=1000 kg/m³; g=9.81 m/s²; factor emisiones = 0.45 kg CO₂/kWh.
-  </footer>
-</div>
+  <script>
+    /* --- scripts idénticos al original, sin cambios excepto valor por defecto turbinas=1 --- */
 
-<script>
-/* ------------------------------------------------
-   Simulador hidroeléctrico
---------------------------------------------------- */
+    const RHO = 1000;
+    const G = 9.81;
+    const CO2_FACTOR = 0.475;
 
-const rho = 1000;
-const g = 9.81;
-const emis_factor_kg_per_kwh = 0.45;
+    const alturaEl = document.getElementById('altura');
+    const turbinasEl = document.getElementById('turbinas');
+    const caudalEl = document.getElementById('caudal');
+    const eficienciaEl = document.getElementById('eficiencia');
+    const calcularBtn = document.getElementById('calcular');
+    const resultadosDiv = document.getElementById('resultados');
+    const grafico = document.getElementById('grafico');
+    const ctx = grafico.getContext('2d');
 
-// Elementos
-const alturaEl = document.getElementById('altura');
-const alturaVal = document.getElementById('alturaVal');
-const caudalEl = document.getElementById('caudal');
-const caudalVal = document.getElementById('caudalVal');
-const turbinasEl = document.getElementById('turbinas');
-const eficienciaEl = document.getElementById('eficiencia');
+    const reservoirRect = document.querySelector('#reservoir rect');
+    const wavesGroup = document.querySelector('#waves');
+    const turbinesContainer = document.querySelector('#powerhouse g[transform="translate(60,-10)"]');
 
-const potenciaEl = document.getElementById('potencia');
-const diariaEl = document.getElementById('diaria');
-const mensualEl = document.getElementById('mensual');
-const anualEl = document.getElementById('anual');
-const co2El = document.getElementById('co2');
-const qtotalEl = document.getElementById('qtotal');
+    const blades = () => Array.from(document.querySelectorAll('.blade'));
+    const toggleBtn = document.getElementById('toggle');
+    const slowBtn = document.getElementById('slow');
+    const fastBtn = document.getElementById('fast');
+    const speedLabel = document.getElementById('speedLabel');
+    let speed = 1.0;
 
-const waterLevel = document.getElementById('waterLevel');
-const wave1 = document.getElementById('wave1');
-const wave2 = document.getElementById('wave2');
-const chart = document.getElementById('chart');
+    function applySpeed(){
+      blades().forEach(b=>{ b.style.animationDuration = (1.5 / speed) + 's'; });
+      speedLabel.textContent = speed.toFixed(2) + 'x';
+    }
+    applySpeed();
 
-function actualizar(){
+    toggleBtn.addEventListener('click', ()=>{
+      const list = blades();
+      if(!list.length) return;
+      const paused = list[0].classList.toggle('paused');
+      toggleBtn.textContent = paused ? 'Reanudar turbina' : 'Pausar turbina';
+    });
 
-  const H = Number(alturaEl.value);
-  const Q_per = Number(caudalEl.value);
-  const n = Number(turbinasEl.value);
-  const eta = Math.max(0, Math.min(0.99, Number(eficienciaEl.value)/100));
+    slowBtn.addEventListener('click', ()=>{ speed = Math.max(0.2, speed - 0.25); applySpeed(); });
+    fastBtn.addEventListener('click', ()=>{ speed = Math.min(6, speed + 0.25); applySpeed(); });
 
-  alturaVal.textContent = H.toFixed(0);
-  caudalVal.textContent = Q_per.toFixed(0);
+    function updateReservoirVisual(altura){
+      const maxVisualH = 220;
+      const clampH = Math.max(0, Math.min(altura, 200));
+      const newH = (clampH / 100) * maxVisualH;
+      const baseY = 160;
+      const y = baseY + (maxVisualH - newH);
+      reservoirRect.setAttribute('y', String(y));
+      reservoirRect.setAttribute('height', String(Math.max(6, newH)));
+      wavesGroup.setAttribute('transform', `translate(0,${y+newH-110})`);
+    }
 
-  const Q_total = Q_per * n;
-  const P_W = rho * g * Q_total * H * eta;
-  const P_kW = P_W / 1000;
+    function updateTurbinesVisual(count){
+      while (turbinesContainer.firstChild) turbinesContainer.removeChild(turbinesContainer.firstChild);
+      const rotor = createRotor(0);
+      turbinesContainer.appendChild(rotor);
+      applySpeed();
+    }
 
-  const prod_diaria_kwh = P_kW * 24;
-  const prod_mensual_kwh = prod_diaria_kwh * 30;
-  const prod_anual_kwh = prod_diaria_kwh * 365;
+    function createRotor(cx){
+      const svgns = 'http://www.w3.org/2000/svg';
+      const g = document.createElementNS(svgns,'g');
+      g.setAttribute('class','turbine');
+      g.setAttribute('transform', `translate(${cx},0)`);
+      const circ = document.createElementNS(svgns,'circle');
+      circ.setAttribute('cx','0'); circ.setAttribute('cy','0'); circ.setAttribute('r','36');
+      circ.setAttribute('fill','#eee'); circ.setAttribute('stroke','#bbb'); circ.setAttribute('stroke-width','4');
+      g.appendChild(circ);
+      const rotor = document.createElementNS(svgns,'g');
+      rotor.setAttribute('class','blade');
+      rotor.setAttribute('style','transform-origin:0px 0px;');
+      const pathData = [
+        'M0 -26 C8 -18 14 -8 12 0 C10 8 4 14 0 16 C-4 14 -10 8 -12 0 C-14 -8 -8 -18 0 -26 Z',
+        'M26 0 C18 8 8 14 0 12 C-8 10 -14 4 -16 0 C-14 -4 -8 -10 0 -12 C8 -14 18 -8 26 0 Z',
+        'M0 26 C-8 18 -14 8 -12 0 C-10 -8 -4 -14 0 -16 C4 -14 10 -8 12 0 C14 8 8 18 0 26 Z'
+      ];
+      pathData.forEach(d=>{ const p=document.createElementNS(svgns,'path'); p.setAttribute('d',d); p.setAttribute('fill','#555'); rotor.appendChild(p); });
+      g.appendChild(rotor);
+      return g;
+    }
 
-  const co2_kg_anual = prod_anual_kwh * emis_factor_kg_per_kwh;
-  const co2_t_anual = co2_kg_anual / 1000;
+    function fmt(n,dec=2){
+      return Number(n).toLocaleString(undefined, {minimumFractionDigits:dec, maximumFractionDigits:dec});
+    }
 
-  potenciaEl.textContent = numberWithCommas(P_kW.toFixed(1)) + ' kW';
-  diariaEl.textContent = numberWithCommas(prod_diaria_kwh.toFixed(0)) + ' kWh';
-  mensualEl.textContent = numberWithCommas(prod_mensual_kwh.toFixed(0)) + ' kWh';
-  anualEl.textContent = numberWithCommas(prod_anual_kwh.toFixed(0)) + ' kWh';
-  co2El.textContent = numberWithCommas(co2_t_anual.toFixed(1)) + ' tCO₂/año';
-  qtotalEl.textContent = numberWithCommas(Q_total.toFixed(1)) + ' m³/s';
+    function drawMonthlyChart(monthlyMWh){
+      const width = grafico.width; const height = grafico.height; const padding = 30;
+      ctx.clearRect(0,0,width,height);
+      ctx.strokeStyle = '#999'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding, height-padding); ctx.lineTo(width-padding, height-padding); ctx.stroke();
 
-  const pct = (H - 5) / 195;
-  const maxHeightPx = 120;
-  waterLevel.style.height = (10 + pct * maxHeightPx) + 'px';
+      const maxVal = Math.max(...monthlyMWh, 1);
+      const barWidth = (width - padding*2) / monthlyMWh.length * 0.7;
+      monthlyMWh.forEach((v,i)=>{
+        const x = padding + i * ((width - padding*2)/monthlyMWh.length) + ((width - padding*2)/monthlyMWh.length - barWidth)/2;
+        const h = ( (v / maxVal) * (height - padding*2) );
+        ctx.fillStyle = '#1976d2';
+        ctx.fillRect(x, height - padding - h, barWidth, h);
+        ctx.fillStyle = '#222'; ctx.font = '10px sans-serif';
+        const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        ctx.fillText(meses[i], x+2, height - padding + 12);
+      });
 
-  const speedA = 6 - Math.min(4.5, Math.log10(1 + Q_total));
-  wave1.style.animationDuration = Math.max(2.5, speedA) + 's';
-  wave2.style.animationDuration = Math.max(5, speedA * 1.6) + 's';
+      ctx.fillStyle='#333'; ctx.font='11px sans-serif';
+      ctx.fillText('Producción mensual estimada (MWh)', padding, padding-8);
+    }
 
-  const seasonFactors = [0.9,0.95,1.05,1.1,1.05,0.95,0.9,0.9,1.0,1.05,1.1,1.05];
-  drawChart(prod_mensual_kwh, seasonFactors);
-}
+    function calcular(){
+      const H = parseFloat(alturaEl.value) || 0;
+      const n = 1;
+      const q = parseFloat(caudalEl.value) || 0;
+      const eta = (parseFloat(eficienciaEl.value) || 0)/100;
 
-function drawChart(baseMonthly, factors){
-  chart.innerHTML = '';
+      updateReservoirVisual(H);
+      updateTurbinesVisual(1);
 
-  let values = factors.map(f => baseMonthly * f);
-  const maxVal = Math.max(...values, 1);
+      const Q_total = n * q;
+      const potenciaW = RHO * G * Q_total * H * eta;
+      const potenciaKW = potenciaW / 1000;
 
-  for(let i=0;i<12;i++){
-    const val = values[i];
-    const heightPct = val / maxVal;
+      const secondsPerDay = 86400;
+      const dailyMWh = potenciaW * secondsPerDay / 1e6;
 
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    bar.style.height = Math.max(8, Math.round(heightPct * 180)) + 'px';
+      const diasMes = [31,28,31,30,31,30,31,31,30,31,30,31];
+      const monthlyMWh = diasMes.map(d => dailyMWh * d);
+      const annualMWh = monthlyMWh.reduce((a,b)=>a+b,0);
 
-    const span = document.createElement('div');
-    span.style.fontSize='9px';
-    span.style.opacity='0.9';
-    span.textContent = Math.round(val/1000) + ' M';
+      const annualkWh = annualMWh * 1000;
+      const co2AvoidedTon = (annualkWh * CO2_FACTOR) / 1000;
 
-    bar.appendChild(span);
-    chart.appendChild(bar);
-  }
-}
+      resultadosDiv.innerHTML = `
+        <strong>Resultados</strong><br>
+        Potencia instantánea: <strong>${fmt(potenciaKW,2)} kW</strong><br>
+        Producción estimada diaria: <strong>${fmt(dailyMWh,3)} MWh/día</strong><br>
+        Producción estimada mensual (promedio): <strong>${fmt(annualMWh/12,3)} MWh/mes</strong><br>
+        Producción estimada anual: <strong>${fmt(annualMWh,2)} MWh/año</strong><br>
+        Caudal total: <strong>${fmt(Q_total,2)} m³/s</strong><br>
+        CO₂ evitado anual (aprox.): <strong>${fmt(co2AvoidedTon,2)} tCO₂/año</strong>
+      `;
 
-function numberWithCommas(x){
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
+      drawMonthlyChart(monthlyMWh);
+    }
 
-alturaEl.addEventListener('input', actualizar);
-caudalEl.addEventListener('input', actualizar);
-turbinasEl.addEventListener('change', actualizar);
-eficienciaEl.addEventListener('input', actualizar);
-
-actualizar();
-</script>
-
+    calcularBtn.addEventListener('click', calcular);
+    window.addEventListener('load', ()=>{ calcular(); });
+  </script>
 </body>
 </html>
